@@ -39,7 +39,7 @@ module CarrierWave
       end
     end
 
-    def encode_video(format, opts={})
+    def encode_video(format, opts={}, encoder_opts=nil)
       # move upload to local cache
       cache_stored_file! if !cached?
 
@@ -53,8 +53,10 @@ module CarrierWave
 
       yield(file, @options.format_options) if block_given?
 
+      encoder_opts = encoder_opts.nil? ? @options.encoder_options : encoder_opts
+
       with_trancoding_callbacks do
-        file.transcode(tmp_path, @options.format_params, @options.encoder_options)
+        file.transcode(tmp_path, @options.format_params, encoder_opts)
         File.rename tmp_path, current_path
       end
     end

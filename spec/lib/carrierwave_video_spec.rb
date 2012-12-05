@@ -74,6 +74,38 @@ describe CarrierWave::Video do
       end
     end
 
+    context "with codec options set" do
+      before {  File.should_receive(:rename) }
+
+      it "should use supplied empty codec options" do
+        movie.should_receive(:transcode) do |path, opts, codec_opts|
+          codec_opts.should == {}
+
+          opts[:video_codec].should == 'libvpx'
+          opts[:audio_codec].should == 'libvorbis'
+          opts[:custom].should == '-b 1500k -ab 160000 -f webm -g 30'
+
+          path.should == "video/path/tmpfile.#{format}"
+        end
+
+        converter.encode_video(format, {}, {})
+      end
+
+      it "should use supplied codec options" do
+        movie.should_receive(:transcode) do |path, opts, codec_opts|
+          codec_opts.should == { :preserve_aspect_ratio => :height }
+
+          opts[:video_codec].should == 'libvpx'
+          opts[:audio_codec].should == 'libvorbis'
+          opts[:custom].should == '-b 1500k -ab 160000 -f webm -g 30'
+
+          path.should == "video/path/tmpfile.#{format}"
+        end
+
+        converter.encode_video(format, {}, { :preserve_aspect_ratio => :height })
+      end
+    end
+
     context "with callbacks set" do
       before { movie.should_receive(:transcode) }
       let(:opts) do
